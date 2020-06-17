@@ -1,10 +1,9 @@
 const restify = require('restify');
 const request = require('request-promise-native');
-const logger = require('./logger');
 const moment = require('moment');
-// const { time } = require('./helpers');
-const config = require('./env');
 const mqtt = require('mqtt');
+const logger = require('./logger');
+const config = require('./env');
 
 const consoleConfig = { ...config };
 logger.info('environment variables:\n', consoleConfig);
@@ -31,7 +30,7 @@ server.post('/data', async (req, res) => {
 
 	try {
 		const data = req.body;
-		data.epoch = moment(data.date, "MMMM D, YYYY at hh:mmA").valueOf();
+		data.epoch = moment(data.date, 'MMMM D, YYYY at hh:mmA').valueOf();
 		logger.debug(data);
 
 		postValuesToInflux(data);

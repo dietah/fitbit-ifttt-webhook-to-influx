@@ -1,8 +1,10 @@
 const restify = require('restify');
 const request = require('request-promise-native');
 const logger = require('./logger');
+const moment = require('moment');
 // const { time } = require('./helpers');
 const config = require('./env');
+const mqtt = require('mqtt');
 
 const consoleConfig = { ...config };
 logger.info('environment variables:\n', consoleConfig);
@@ -13,6 +15,9 @@ server.server.setTimeout(config.SERVER_TIMEOUT);
 server
 	.use(restify.plugins.queryParser({ mapParams: false }))
 	.use(restify.plugins.bodyParser({ mapParams: false }));
+
+// mqtt settings
+const client = mqtt.connect({ port: config.MQTT_PORT, host: config.MQTT_HOST });
 
 // some handling
 server.on('error', (err) => {
@@ -25,9 +30,13 @@ server.post('/data', async (req, res) => {
 	logger.logRequest('fitbit-ifttt-webhook-to-influx.data.post');
 
 	try {
-		logger.debug(req.body);
-		const data = `fitbit,device=aria bmi=${req.body.bmi},weight=${req.body.weight}`;
+		const data = req.body;
+		data.epoch = moment(data.date, "MMMM D, YYYY at hh:mmA").valueOf();
+		logger.debug(data);
+
 		postValuesToInflux(data);
+		postValuesToMQTT(data);
+
 		res.send(201);
 	} catch (err) {
 		logger.error(err);
@@ -40,13 +49,21 @@ server.listen(config.SERVER_PORT, () => {
 });
 
 function postValuesToInflux(data) {
+	const body = `fitbit,device=aria bmi=${data.bmi},weight=${data.weight} ${data.epoch}`;
+
 	return request({
-		url: `http://${config.DB_HOST}:${config.DB_PORT}/api/v2/write?bucket=${config.DB_NAME}`,
+		url: `http://${config.DB_HOST}:${config.DB_PORT}/api/v2/write?bucket=${config.DB_NAME}&precision=ms`,
 		method: 'POST',
-		body: data
+		body
 	})
 	.catch((err) => {
 		logger.error('could not post fitbit data to influx', err);
 		throw new Error('could not post fitbit data to influx');
 	});
+}
+
+function postValuesToMQTT(data) {
+	client.publish(`${config.MQTT_TOPIC}/weight`, `${data.weight}`);
+	client.publish(`${config.MQTT_TOPIC}/bmi`, `${data.bmi}`);
+	client.publish(`${config.MQTT_TOPIC}/date`, `${data.epoch}`);
 }

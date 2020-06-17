@@ -30,6 +30,7 @@
     "log4js": "^6.2.1",
     "moment": "^2.24.0",
     "moment-duration-format": "^2.3.2",
+    "mqtt": "^4.1.0",
     "request": "^2.88.2",
     "request-promise-native": "^1.0.8",
     "restify": "^8.5.1"

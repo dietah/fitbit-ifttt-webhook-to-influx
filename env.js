@@ -10,7 +10,11 @@ module.exports = envalid.cleanEnv(process.env, {
 
 	DB_HOST:		envalid.host({ desc: 'The Influx DB host address' }),
 	DB_PORT:		envalid.port({ default: 8086, desc: 'The Influx DB port' }),
-	DB_NAME:		envalid.str({ default:'fitbit', desc: 'The Influx DB bucket name' })
+	DB_NAME:		envalid.str({ default:'fitbit', desc: 'The Influx DB bucket name' }),
+
+	MQTT_HOST:		envalid.host({ desc: 'The MQTT broker host address' }),
+	MQTT_PORT:		envalid.port({ default: 1883, desc: 'The MQTT broker port' }),
+	MQTT_TOPIC:		envalid.str({ default:'fitbit/aria/', desc: 'The Influx DB bucket name' }),
 }, {
 	strict: true
 });

@@ -1,5 +1,4 @@
 const restify = require('restify');
-// const moment = require('moment');
 const request = require('request-promise-native');
 const logger = require('./logger');
 // const { time } = require('./helpers');

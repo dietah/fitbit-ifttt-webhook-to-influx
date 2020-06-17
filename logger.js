@@ -15,7 +15,7 @@ log4js.configure({
 	}
 });
 
-const logger = log4js.getLogger('scarlet-usage-api');
+const logger = log4js.getLogger('fitbit-to-influx');
 
 // Log4js Log Levels
 // OFF

@@ -1,6 +1,6 @@
 {
   "name": "fitbit-ifttt-webhook-to-influx",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "TBA",
   "main": "index.js",
   "scripts": {

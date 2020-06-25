@@ -26,16 +26,18 @@ const INFLUX_BUCKET = 'fitbit';
 		logger.info(`Detected ${files.length} files`);
 
 		for (const f of files) {
-			let fullPath = path.join(FOLDER, f);
-			logger.debug(`Started reading ${fullPath}`);
+			if (f.includes('weight')) {
+				let fullPath = path.join(FOLDER, f);
+				logger.debug(`Started reading ${fullPath}`);
 
-			const file = await fsp.readFile(fullPath, 'utf-8');
-			const logs = JSON.parse(file);
+				const file = await fsp.readFile(fullPath, 'utf-8');
+				const logs = JSON.parse(file);
 
-			for (const log of logs) {
-				log.epoch = moment(`${log.date} ${log.time}`, 'MM/DD/YY HH:mm:ss').valueOf();
-				log.weight = Math.round(log.weight / 2.205 * 10) / 10;
-				await postValuesToInflux(log);
+				for (const log of logs) {
+					log.epoch = moment(`${log.date} ${log.time}`, 'MM/DD/YY HH:mm:ss').valueOf();
+					log.weight = Math.round(log.weight / 2.205 * 10) / 10;
+					await postValuesToInflux(log);
+				}
 			}
 		}
 

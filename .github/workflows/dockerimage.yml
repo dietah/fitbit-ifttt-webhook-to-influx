@@ -1,4 +1,4 @@
-name: 'Build ARMv7'
+name: 'Build'
 
 on:
   push:
@@ -11,7 +11,7 @@ on:
       - ".github/workflows/dockerimage.yml"
 
 jobs:
-  release:
+  dockerhub:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -19,23 +19,12 @@ jobs:
       - name: Set vars
         id: vars
         run: if [ "${GITHUB_REF#refs/*/}" == "master" ]; then echo ::set-output name=branch::latest; else echo ::set-output name=branch::${GITHUB_REF#refs/*/}; fi
-      - name: Dockerhub login
-        env:
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-        run: |
-          echo "${DOCKER_PASSWORD}" | docker login --username ${DOCKER_USERNAME} --password-stdin
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: crazy-max/ghaction-docker-buildx@v1
+      - name: Get Version
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@master
+      - name: Build & Publish to Registry
+        uses: dietah/action-docker-publish-changed@master
         with:
-          version: latest
-      - name: Build dockerfile (with push)
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-        run: |
-          docker buildx build \
-          --platform=linux/arm/v7 \
-          --output "type=image,push=true" \
-          --file ./Dockerfile . \
-          --tag $(echo "${DOCKER_USERNAME}" | tr '[:upper:]' '[:lower:]')/fitbit-ifttt-webhook-to-influx:${{ steps.vars.outputs.branch }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
